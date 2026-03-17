@@ -12,19 +12,531 @@
 </head>
 <body>
   <div id="root"></div>
-
-  <!-- React + ReactDOM -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-
-  <!-- Babel to transform JSX in the browser -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-  <!-- Load your component -->
-  <script type="text/babel" src="EndangeredSpecies.jsx" data-type="module"></script>
-
-  <!-- Mount it -->
   <script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+const SPECIES = [
+  {
+    name: "Amur Leopard",
+    scientificName: "Panthera pardus orientalis",
+    status: "Critically Endangered",
+    population: "~100 left",
+    region: "Russian Far East",
+    habitat: "Temperate broadleaf forests along the Russia–China border",
+    diet: "Deer, wild boar, small mammals",
+    lifespan: "10–15 years",
+    weight: "32–48 kg",
+    threats: ["Habitat loss", "Poaching", "Prey depletion"],
+    funFact: "Amur leopards can leap more than 6 metres horizontally — and are the rarest wild cat on Earth.",
+    tagline: "The loneliest cat on Earth",
+    adult: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Amur_leopard_in_toronto_zoo.jpg/960px-Amur_leopard_in_toronto_zoo.jpg",
+    baby: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Amur_Leopard_Cub_%2815831746368%29.jpg/960px-Amur_Leopard_Cub_%2815831746368%29.jpg"
+  },
+  {
+    name: "Mountain Gorilla",
+    scientificName: "Gorilla beringei beringei",
+    status: "Endangered",
+    population: "~1,063 remaining",
+    region: "Central Africa",
+    habitat: "Afromontane forests at 2,200–4,300 m in the Virunga volcanoes",
+    diet: "Leaves, stems, bark, fruit",
+    lifespan: "35–40 years",
+    weight: "100–200 kg",
+    threats: ["Habitat destruction", "Civil conflict", "Disease"],
+    funFact: "Mountain gorillas are one of very few endangered species whose population is actually growing, thanks to intense conservation work.",
+    tagline: "Rising from the brink",
+    adult: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Mountain_gorilla_in_Rwanda.jpg/960px-Mountain_gorilla_in_Rwanda.jpg",
+    baby: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Baby_gorilla_at_Bristol_Zoo_1.jpg/960px-Baby_gorilla_at_Bristol_Zoo_1.jpg"
+  },
+  {
+    name: "Snow Leopard",
+    scientificName: "Panthera uncia",
+    status: "Vulnerable",
+    population: "4,000–6,500 remaining",
+    region: "Central & South Asia",
+    habitat: "Alpine and subalpine zones of the Himalayas, 3,000–5,500 m",
+    diet: "Blue sheep, ibex, small mammals",
+    lifespan: "10–12 years",
+    weight: "22–55 kg",
+    threats: ["Poaching", "Retaliatory killing", "Climate change"],
+    funFact: "Snow leopards cannot roar. They communicate through yowls and haunting moans — earning the nickname 'ghost of the mountains'.",
+    tagline: "Ghost of the mountains",
+    adult: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Snow_leopard_Ppanthera_uncia_in_a_zoo.jpg/960px-Snow_leopard_Ppanthera_uncia_in_a_zoo.jpg",
+    baby: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Snow_leopard_cub_at_Brookfield_Zoo.jpg/960px-Snow_leopard_cub_at_Brookfield_Zoo.jpg"
+  },
+  {
+    name: "Giant Panda",
+    scientificName: "Ailuropoda melanoleuca",
+    status: "Vulnerable",
+    population: "~1,864 remaining",
+    region: "Central China",
+    habitat: "Temperate mountain forests of Sichuan, Shaanxi, and Gansu",
+    diet: "Bamboo (99% of diet), occasional small mammals",
+    lifespan: "15–20 years",
+    weight: "70–125 kg",
+    threats: ["Habitat fragmentation", "Low birth rate", "Climate change"],
+    funFact: "Pandas eat bamboo for up to 14 hours a day, yet absorb less than 20% of what they consume — their gut is still that of a carnivore.",
+    tagline: "The symbol of conservation",
+    adult: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Grosser_Panda.JPG/960px-Grosser_Panda.JPG",
+    baby: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/A_giant_panda_cub_at_the_San_Diego_Zoo.jpg/960px-A_giant_panda_cub_at_the_San_Diego_Zoo.jpg"
+  },
+  {
+    name: "Cheetah",
+    scientificName: "Acinonyx jubatus",
+    status: "Vulnerable",
+    population: "~7,000 remaining",
+    region: "Africa & Iran",
+    habitat: "Open grasslands, arid savannas, and sparse woodland",
+    diet: "Gazelles, impalas, hares, birds",
+    lifespan: "10–12 years",
+    weight: "21–72 kg",
+    threats: ["Habitat loss", "Human conflict", "Cub trafficking"],
+    funFact: "Cheetahs are the only big cats that can turn in mid-air while sprinting — their tail acts as a rudder at 112 km/h.",
+    tagline: "Speed cannot outrun extinction",
+    adult: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Cheetah6.jpg/960px-Cheetah6.jpg",
+    baby: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Cheetah_cub_2_%28Acinonyx_jubatus%29.jpg/960px-Cheetah_cub_2_%28Acinonyx_jubatus%29.jpg"
+  },
+  {
+    name: "Polar Bear",
+    scientificName: "Ursus maritimus",
+    status: "Vulnerable",
+    population: "~26,000 remaining",
+    region: "Arctic Circle",
+    habitat: "Sea ice, arctic coastlines, and open water across the circumpolar Arctic",
+    diet: "Ringed seals, bearded seals, occasionally beluga whales",
+    lifespan: "25–30 years",
+    weight: "350–700 kg",
+    threats: ["Climate change", "Sea ice loss", "Pollution"],
+    funFact: "Polar bears have black skin beneath their white fur to absorb heat. Their fur is hollow and transparent — it only appears white due to light scattering.",
+    tagline: "Melting into memory",
+    adult: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Polar_Bear_-_Alaska_%28cropped%29.jpg/960px-Polar_Bear_-_Alaska_%28cropped%29.jpg",
+    baby: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Polar_bear_cub.jpg/960px-Polar_bear_cub.jpg"
+  },
+  {
+    name: "African Wild Dog",
+    scientificName: "Lycaon pictus",
+    status: "Endangered",
+    population: "~6,600 remaining",
+    region: "Sub-Saharan Africa",
+    habitat: "Savannas, open woodland, and semi-arid zones of eastern and southern Africa",
+    diet: "Impala, wildebeest calves, warthogs",
+    lifespan: "10–12 years",
+    weight: "18–36 kg",
+    threats: ["Habitat fragmentation", "Human conflict", "Disease"],
+    funFact: "African wild dogs succeed in roughly 80% of hunts — compared to lions at ~25% — making them Africa's most efficient large predator.",
+    tagline: "Africa's most efficient predator",
+    adult: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/African_Wild_Dog.jpg/960px-African_Wild_Dog.jpg",
+    baby: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/African_wild_dog_pup.jpg/960px-African_wild_dog_pup.jpg"
+  },
+  {
+    name: "Hawksbill Sea Turtle",
+    scientificName: "Eretmochelys imbricata",
+    status: "Critically Endangered",
+    population: "~8,000 nesting females",
+    region: "Tropical oceans worldwide",
+    habitat: "Coral reefs, rocky shores, and shallow coastal lagoons",
+    diet: "Sea sponges, jellyfish, sea anemones",
+    lifespan: "30–50 years",
+    weight: "46–70 kg",
+    threats: ["Shell trade", "Habitat loss", "Climate change"],
+    funFact: "Hawksbills are the only sea turtles that eat toxic sponges — an immunity that keeps coral reefs healthy by controlling sponge populations.",
+    tagline: "Guardian of the coral reef",
+    adult: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/Hawksbill_sea_turtle_off_the_Florida_Keys.jpg/960px-Hawksbill_sea_turtle_off_the_Florida_Keys.jpg",
+    baby: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Hawksbill_turtle_hatchling.jpg/960px-Hawksbill_turtle_hatchling.jpg"
+  },
+  {
+    name: "Sumatran Tiger",
+    scientificName: "Panthera tigris sumatrae",
+    status: "Critically Endangered",
+    population: "400–600 remaining",
+    region: "Sumatra, Indonesia",
+    habitat: "Tropical broadleaf forests from lowland peat swamps to montane highlands",
+    diet: "Deer, wild pigs, tapir, fish",
+    lifespan: "15–20 years",
+    weight: "75–140 kg",
+    threats: ["Deforestation", "Poaching", "Human conflict"],
+    funFact: "Sumatran tigers are the smallest surviving tiger subspecies — their compact size helps them navigate dense jungle terrain.",
+    tagline: "King of the jungle, fading fast",
+    adult: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Sumatran_tiger_berlin_tierpark.jpg/960px-Sumatran_tiger_berlin_tierpark.jpg",
+    baby: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Sumatran_Tiger_Cub.jpg/960px-Sumatran_Tiger_Cub.jpg"
+  },
+  {
+    name: "Leatherback Sea Turtle",
+    scientificName: "Dermochelys coriacea",
+    status: "Vulnerable",
+    population: "~34,000 nesting females",
+    region: "Global oceans",
+    habitat: "Open ocean and deep water; nests on tropical beaches worldwide",
+    diet: "Jellyfish almost exclusively",
+    lifespan: "45–50 years",
+    weight: "250–700 kg",
+    threats: ["Bycatch", "Plastic ingestion", "Egg harvesting"],
+    funFact: "The leatherback is the world's largest reptile and can dive deeper than 1,200 metres — deeper than most submarines.",
+    tagline: "Ancient wanderer of the deep",
+    adult: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Leatherback_sea_turtle_Tinglar_USVI_%285839996547%29.jpg/960px-Leatherback_sea_turtle_Tinglar_USVI_%285839996547%29.jpg",
+    baby: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Leatherback_sea_turtle_hatchling.jpg/960px-Leatherback_sea_turtle_hatchling.jpg"
+  },
+  {
+    name: "Black Rhino",
+    scientificName: "Diceros bicornis",
+    status: "Critically Endangered",
+    population: "~6,195 remaining",
+    region: "Eastern & Southern Africa",
+    habitat: "Savannas, bushlands, and semi-arid grasslands",
+    diet: "Leafy plants, branches, thorny bushes",
+    lifespan: "35–50 years",
+    weight: "800–1,400 kg",
+    threats: ["Poaching for horn", "Habitat loss", "Political instability"],
+    funFact: "Black rhinos use their prehensile upper lip — not tusks — to grasp and strip branches, and can run up to 55 km/h despite their bulk.",
+    tagline: "Hunted for a myth",
+    adult: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Black_Rhinoceros_%28Diceros_bicornis%29.jpg/960px-Black_Rhinoceros_%28Diceros_bicornis%29.jpg",
+    baby: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Black_rhino_with_calf.jpg/960px-Black_rhino_with_calf.jpg"
+  },
+  {
+    name: "Philippine Eagle",
+    scientificName: "Pithecophaga jefferyi",
+    status: "Critically Endangered",
+    population: "~800 remaining",
+    region: "Philippines",
+    habitat: "Old-growth dipterocarp forests of Mindanao, Leyte, Samar and Luzon",
+    diet: "Monkeys, flying lemurs, large bats, reptiles",
+    lifespan: "30–60 years",
+    weight: "4.5–8 kg",
+    threats: ["Deforestation", "Hunting", "Trapping"],
+    funFact: "A mated pair raises just one chick every two years, making population recovery agonisingly slow for this, the world's largest eagle by wingspan.",
+    tagline: "Lord of the Philippine skies",
+    adult: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Philippine_Eagle.jpg/768px-Philippine_Eagle.jpg",
+    baby: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Philippine_eagle_chick.jpg/768px-Philippine_eagle_chick.jpg"
+  },
+  {
+    name: "Vaquita",
+    scientificName: "Phocoena sinus",
+    status: "Critically Endangered",
+    population: "< 10 remaining",
+    region: "Gulf of California, Mexico",
+    habitat: "Shallow, murky lagoons in the northern Gulf of California",
+    diet: "Fish, squid, crustaceans",
+    lifespan: "~20 years",
+    weight: "30–55 kg",
+    threats: ["Illegal gillnet fishing", "Bycatch", "Totoaba poaching"],
+    funFact: "Discovered by science in 1958, the vaquita may go extinct before most people ever hear of it — the world's smallest and rarest cetacean.",
+    tagline: "The world's rarest marine mammal",
+    adult: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Vaquita6_Olson_NOAA.jpg/960px-Vaquita6_Olson_NOAA.jpg",
+    baby: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Vaquita_mother_and_calf.jpg/960px-Vaquita_mother_and_calf.jpg"
+  },
+  {
+    name: "Ethiopian Wolf",
+    scientificName: "Canis simensis",
+    status: "Endangered",
+    population: "~500 remaining",
+    region: "Ethiopian Highlands",
+    habitat: "Afroalpine grasslands and heathlands above 3,000 m",
+    diet: "Giant mole-rats, grass rats, other small rodents",
+    lifespan: "8–10 years",
+    weight: "11–19 kg",
+    threats: ["Rabies", "Habitat loss", "Hybridisation with domestic dogs"],
+    funFact: "Ethiopian wolves live in tight family packs but hunt completely solo — each wolf patrols its own rodent-rich territory at dawn and dusk.",
+    tagline: "Africa's forgotten wolf",
+    adult: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Ethiopian_wolf_2_%28cropped%29.jpg/960px-Ethiopian_wolf_2_%28cropped%29.jpg",
+    baby: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Ethiopian_Wolf_pup.jpg/960px-Ethiopian_Wolf_pup.jpg"
+  },
+  {
+    name: "Bactrian Camel",
+    scientificName: "Camelus ferus",
+    status: "Critically Endangered",
+    population: "~950 remaining",
+    region: "Gobi & Taklamakan Deserts",
+    habitat: "Harsh arid deserts and rocky plains of Mongolia and northwest China",
+    diet: "Dry grasses, shrubs, thorny desert plants",
+    lifespan: "~50 years",
+    weight: "300–700 kg",
+    threats: ["Hunting", "Habitat loss", "Hybridisation"],
+    funFact: "Wild Bactrian camels can drink salt water more saline than the sea — a feat no other mammal can match.",
+    tagline: "Last survivor of the Gobi",
+    adult: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Camelus_bactrianus_-Nubra_Valley%2C_Ladakh%2C_India-8.jpg/960px-Camelus_bactrianus_-Nubra_Valley%2C_Ladakh%2C_India-8.jpg",
+    baby: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Bactrian_Camel_calf.jpg/960px-Bactrian_Camel_calf.jpg"
+  },
+];
+
+const STATUS_CONFIG = {
+  "Critically Endangered": { color: "#ff4d4d", glow: "rgba(255,77,77,0.5)"  },
+  "Endangered":            { color: "#ffaa00", glow: "rgba(255,170,0,0.5)"   },
+  "Vulnerable":            { color: "#44aaff", glow: "rgba(68,170,255,0.5)"  },
+};
+
+function PhotoCard({ src, label }) {
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
+  return (
+    <div style={{
+      flex: 1, minWidth: 0, borderRadius: "6px", overflow: "hidden",
+      background: "rgba(255,255,255,0.04)",
+      border: "1px solid rgba(255,255,255,0.1)",
+      position: "relative", aspectRatio: "4/3"
+    }}>
+      {!loaded && !error && (
+        <div style={{
+          position: "absolute", inset: 0, display: "flex", alignItems: "center",
+          justifyContent: "center", flexDirection: "column", gap: "10px"
+        }}>
+          <div style={{
+            width: "28px", height: "28px",
+            border: "2px solid rgba(255,255,255,0.08)",
+            borderTop: "2px solid rgba(255,255,255,0.4)",
+            borderRadius: "50%", animation: "spin 0.9s linear infinite"
+          }} />
+        </div>
+      )}
+      {error ? (
+        <div style={{
+          position: "absolute", inset: 0, display: "flex", alignItems: "center",
+          justifyContent: "center", flexDirection: "column", gap: "8px",
+          color: "rgba(255,255,255,0.25)", fontSize: "12px", fontFamily: "monospace"
+        }}>
+          <span style={{ fontSize: "28px" }}>🐾</span>
+          {label}
+        </div>
+      ) : (
+        <img
+          src={src} alt={label}
+          onLoad={() => setLoaded(true)}
+          onError={() => { setError(true); setLoaded(true); }}
+          style={{
+            width: "100%", height: "100%", objectFit: "cover",
+            opacity: loaded ? 1 : 0,
+            transition: "opacity 0.6s ease",
+            display: "block"
+          }}
+        />
+      )}
+      {/* Label overlay */}
+      <div style={{
+        position: "absolute", bottom: 0, left: 0, right: 0,
+        padding: "22px 12px 10px",
+        background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)",
+        fontFamily: "monospace", fontSize: "10px", letterSpacing: "3px",
+        color: "rgba(255,255,255,0.55)", textTransform: "uppercase"
+      }}>
+        {label}
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const [index, setIndex] = useState(() => Math.floor(Math.random() * SPECIES.length));
+  const [animIn, setAnimIn] = useState(true);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const usedRef = useRef([index]);
+  const dropdownRef = useRef(null);
+
+  const species = SPECIES[index];
+  const status = STATUS_CONFIG[species.status] || STATUS_CONFIG["Endangered"];
+
+  const transition = (newIndex) => {
+    setAnimIn(false);
+    setTimeout(() => {
+      setIndex(newIndex);
+      setDropdownOpen(false);
+      setTimeout(() => setAnimIn(true), 60);
+    }, 300);
+  };
+
+  const handleShuffle = () => {
+    let pool = SPECIES.map((_, i) => i).filter(i => !usedRef.current.includes(i));
+    if (pool.length === 0) { usedRef.current = [index]; pool = SPECIES.map((_, i) => i).filter(i => i !== index); }
+    const next = pool[Math.floor(Math.random() * pool.length)];
+    usedRef.current.push(next);
+    transition(next);
+  };
+
+  useEffect(() => {
+    const h = (e) => { if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setDropdownOpen(false); };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, []);
+
+  return (
+    <div style={{
+      width: "100vw", minHeight: "100vh",
+      background: "linear-gradient(160deg, #060d06 0%, #0a120a 50%, #060d06 100%)",
+      fontFamily: "'Palatino Linotype', 'Book Antiqua', Palatino, serif",
+      color: "#e8e0d0", overflowY: "auto"
+    }}>
+      <style>{`
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+        .shuf:hover { background: rgba(255,255,255,0.16) !important; transform: scale(1.07) !important; }
+        .shuf:active { transform: scale(0.94) !important; }
+        .dditem:hover { background: rgba(255,255,255,0.1) !important; color: rgba(255,255,255,0.95) !important; }
+        .dd-scroll::-webkit-scrollbar { width: 4px; }
+        .dd-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+      `}</style>
+
+      {/* HEADER */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "20px 28px", borderBottom: "1px solid rgba(255,255,255,0.06)"
+      }}>
+        <div style={{ fontSize: "10px", letterSpacing: "6px", color: "rgba(255,255,255,0.22)", textTransform: "uppercase", fontFamily: "monospace" }}>
+          Wildlife Atlas
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+          <span style={{ color: "rgba(255,255,255,0.18)", fontFamily: "monospace", fontSize: "11px", letterSpacing: "2px" }}>
+            {index + 1} / {SPECIES.length}
+          </span>
+
+          {/* Dropdown */}
+          <div ref={dropdownRef} style={{ position: "relative" }}>
+            <button onClick={() => setDropdownOpen(o => !o)} style={{
+              background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.16)",
+              color: "rgba(255,255,255,0.6)", padding: "7px 14px",
+              fontFamily: "monospace", fontSize: "11px", letterSpacing: "2px",
+              cursor: "pointer", borderRadius: "3px", textTransform: "uppercase",
+              display: "flex", alignItems: "center", gap: "7px",
+              outline: "none", transition: "background 0.2s"
+            }}>
+              Choose Species
+              <span style={{ transition: "transform 0.25s", display: "inline-block", transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)" }}>▾</span>
+            </button>
+            {dropdownOpen && (
+              <div className="dd-scroll" style={{
+                position: "absolute", top: "calc(100% + 8px)", right: 0,
+                background: "rgba(5,12,5,0.97)", border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: "4px", backdropFilter: "blur(24px)",
+                minWidth: "220px", maxHeight: "360px", overflowY: "auto",
+                boxShadow: "0 24px 64px rgba(0,0,0,0.9)", zIndex: 100
+              }}>
+                {SPECIES.map((s, i) => (
+                  <button key={s.name} className="dditem" onClick={() => transition(i)} style={{
+                    display: "flex", alignItems: "center", gap: "10px",
+                    width: "100%", textAlign: "left", padding: "10px 16px",
+                    background: i === index ? "rgba(255,255,255,0.08)" : "transparent",
+                    border: "none", borderBottom: "1px solid rgba(255,255,255,0.05)",
+                    color: i === index ? "white" : "rgba(255,255,255,0.45)",
+                    fontFamily: "monospace", fontSize: "11px", cursor: "pointer",
+                    transition: "all 0.15s", outline: "none"
+                  }}>
+                    <span style={{ width: "6px", height: "6px", borderRadius: "50%", flexShrink: 0, background: (STATUS_CONFIG[s.status] || STATUS_CONFIG["Endangered"]).color, opacity: 0.85 }} />
+                    {s.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* CARD */}
+      <div style={{
+        maxWidth: "1100px", margin: "0 auto", padding: "32px 24px 100px",
+        opacity: animIn ? 1 : 0,
+        transform: animIn ? "translateY(0)" : "translateY(16px)",
+        transition: "opacity 0.45s ease, transform 0.45s ease"
+      }}>
+
+        {/* Title row */}
+        <div style={{ marginBottom: "24px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px", flexWrap: "wrap" }}>
+            <div style={{
+              display: "inline-flex", alignItems: "center", gap: "7px",
+              padding: "4px 12px 4px 8px",
+              background: "rgba(0,0,0,0.35)", borderRadius: "100px",
+              border: `1px solid ${status.color}40`
+            }}>
+              <div style={{ width: "7px", height: "7px", borderRadius: "50%", background: status.color, boxShadow: `0 0 10px ${status.glow}`, animation: "pulse 2.4s ease infinite" }} />
+              <span style={{ color: status.color, fontFamily: "monospace", fontSize: "10px", letterSpacing: "2px", textTransform: "uppercase" }}>{species.status}</span>
+            </div>
+            <span style={{ color: "rgba(255,255,255,0.25)", fontFamily: "monospace", fontSize: "11px" }}>{species.region}</span>
+          </div>
+
+          <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.32)", fontStyle: "italic", letterSpacing: "0.5px", marginBottom: "6px" }}>
+            {species.tagline}
+          </div>
+          <h1 style={{ fontSize: "clamp(36px, 6vw, 68px)", fontWeight: "normal", color: "white", lineHeight: 0.95, letterSpacing: "-1.5px" }}>
+            {species.name}
+          </h1>
+          <div style={{ fontSize: "15px", color: "rgba(255,255,255,0.32)", fontStyle: "italic", marginTop: "6px" }}>
+            {species.scientificName}
+          </div>
+        </div>
+
+        {/* PHOTOS ROW */}
+        <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
+          <PhotoCard src={species.adult} label="Adult" />
+          <PhotoCard src={species.baby}  label="Young" />
+        </div>
+
+        {/* STATS */}
+        <div style={{
+          display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
+          gap: "1px", background: "rgba(255,255,255,0.06)",
+          borderRadius: "4px", overflow: "hidden", marginBottom: "16px"
+        }}>
+          {[
+            { label: "Population", value: species.population },
+            { label: "Lifespan",   value: species.lifespan   },
+            { label: "Weight",     value: species.weight     },
+            { label: "Diet",       value: species.diet       },
+          ].map(({ label, value }) => (
+            <div key={label} style={{ background: "rgba(10,18,10,0.9)", padding: "14px 18px" }}>
+              <div style={{ fontSize: "9px", letterSpacing: "3px", color: "rgba(255,255,255,0.28)", textTransform: "uppercase", fontFamily: "monospace", marginBottom: "5px" }}>{label}</div>
+              <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.82)" }}>{value}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* HABITAT + FACT */}
+        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "16px" }}>
+          <div style={{ flex: 1, minWidth: "200px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "4px", padding: "14px 16px" }}>
+            <div style={{ fontSize: "9px", letterSpacing: "3px", color: "rgba(255,255,255,0.28)", fontFamily: "monospace", textTransform: "uppercase", marginBottom: "7px" }}>Habitat</div>
+            <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.7)", lineHeight: 1.7 }}>{species.habitat}</div>
+          </div>
+          <div style={{ flex: 1, minWidth: "200px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "4px", padding: "14px 16px" }}>
+            <div style={{ fontSize: "9px", letterSpacing: "3px", color: "rgba(255,255,255,0.28)", fontFamily: "monospace", textTransform: "uppercase", marginBottom: "7px" }}>✦ Did you know</div>
+            <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.7)", lineHeight: 1.7, fontStyle: "italic" }}>{species.funFact}</div>
+          </div>
+        </div>
+
+        {/* THREATS */}
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+          {species.threats.map((t, i) => (
+            <span key={i} style={{
+              background: "rgba(255,55,55,0.1)", border: "1px solid rgba(255,55,55,0.2)",
+              color: "rgba(255,150,150,0.85)", padding: "4px 13px",
+              fontFamily: "monospace", fontSize: "10px", borderRadius: "2px", letterSpacing: "0.5px"
+            }}>
+              {t}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* SHUFFLE BUTTON */}
+      <div style={{
+        position: "fixed", bottom: "24px", left: "50%", transform: "translateX(-50%)",
+        zIndex: 20, display: "flex", flexDirection: "column", alignItems: "center", gap: "6px"
+      }}>
+        <button className="shuf" onClick={handleShuffle} style={{
+          background: "rgba(20,35,20,0.88)", border: "1px solid rgba(255,255,255,0.22)",
+          backdropFilter: "blur(16px)", color: "white",
+          width: "54px", height: "54px", borderRadius: "50%",
+          cursor: "pointer", fontSize: "20px",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          transition: "all 0.2s ease",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.7)", outline: "none"
+        }}>⇌</button>
+        <span style={{ color: "rgba(255,255,255,0.2)", fontFamily: "monospace", fontSize: "9px", letterSpacing: "4px", textTransform: "uppercase" }}>Shuffle</span>
+      </div>
+    </div>
+  );
+}
+
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(React.createElement(App));
   </script>
